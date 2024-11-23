@@ -1,0 +1,17 @@
+使用虚拟环境：pt112
+
+1.使用水下数据集训练：EUVP数据集
+trainA:paired/underwater_imagenet/trainA
+trainB:paired/underwater_imagenet/trainB
+trainC:paired/underwater_dark/trainA
+trainD:paired/underwater_dark/trainB
+testA:paired/underwater_imagenet/validation
+
+
+2.train
+python train.py --dataroot path/to/dataset --name exp_name --model blur2blur --netG mimounet --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+（1）预训练模型下载：https://github.com/VinAIResearch/blur-kernel-space-exploring
+
+3.test
+python test.py --dataroot ./dataset/ --name exp_name --eval --model blur2blur --netG mimounet --checkpoints_dir ckpts/ --dataset_mode unaligned --norm instance
+
