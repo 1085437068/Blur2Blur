@@ -1,0 +1,52 @@
+记录实验过程：
+
+数据集划分：
+使用UIEB数据集分为三个数据集：lowPSNR50共455张图片（分为测试集test-90共90张图片和train-low355训练集355张图片），highPSNR50共455张图片(命名为train-high455)
+1.在没有使用blur2blur之前，test-90的PSNR计算如下：
+
+(1)GT和原始图片
+SSIM on 90 samples
+Mean: 7.260023099850384 std: 1.5104640705669232
+PSNR on 90 samples
+Mean: 18.481637708461207 std: 4.172868141885196
+
+(2)GT和原始图片增强后的图片
+SSIM on 90 samples
+Mean: 8.718555961437291 std: 0.513672134228728
+PSNR on 90 samples
+Mean: 22.898429277088134 std: 3.3813844409344105
+
+
+2.在使用blur2blur之后，test-90的PSNR计算如下（由blur2blur代码中没有预训练模型，因此采用划分的训练集进行训练后再看结果）：
+（1）使用blur2blur训练UIEB数据
+实验一：模型使用blur2blur，生成器使用mimountet
+python train.py --dataroot dataset --name blur2blur_mimounet --model blur2blur --netG mimounet --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+trainA:train-low355
+trainB:train-low355 gt
+trainC:train-high455
+trainD:train-high455 gt
+testA:test-90
+
+运行test：python test.py --dataroot ./dataset/ --name blur2blur_mimounet --eval --model blur2blur --netG mimounet --checkpoints_dir ckpts/ --dataset_mode unaligned --norm instance
+
+（2）GT和原始图片blur后的图片
+SSIM on 90 samples
+Mean: 7.098177227142586 std: 1.2740775103013935
+PSNR on 90 samples
+Mean: 18.6507376990186 std: 3.7140497323932316
+
+（2）GT和原始图片blur后，再进行增强的图片
+SSIM on 90 samples
+Mean: 8.349262919194697 std: 0.8479304129520258
+PSNR on 90 samples
+Mean: 21.18151319118627 std: 3.85820436744229
+
+实验二：模型使用blur2blur，生成器使用unet256
+python train.py --dataroot dataset --name blur2blur_unet_256 --model blur2blur --netG unet_256 --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+
+
+
+
+
+
+

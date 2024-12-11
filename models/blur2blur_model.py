@@ -92,11 +92,11 @@ class Blur2BlurModel(BaseModel):
 
             self.netD.to(self.device)
             self.netD = torch.nn.DataParallel(self.netD)
-
+        #模型配置
         with open("options/generate_blur/augmentation.yml", "r") as f:
             opt = yaml.load(f, Loader=yaml.FullLoader)["KernelWizard"]
             model_path = opt["pretrained"]
-        self.genblur = KernelWizard(opt)
+        self.genblur = KernelWizard(opt)  #调用去模糊网络
         print("Loading KernelWizard...")
         self.genblur.eval()
         self.genblur.load_state_dict(torch.load(model_path))
@@ -140,6 +140,30 @@ class Blur2BlurModel(BaseModel):
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         self.fake_B = self.netG(self.real_A)  # G(A)
+        # self.fake_B_ = self.fake_B[2]
+        # 打印输出类型和形状以便调试
+        #print(f"Generator output type: {type(self.fake_B)}")
+        if isinstance(self.fake_B, torch.Tensor):
+            #print(f"Shape of self.fake_B: {self.fake_B.shape}")
+
+            # 上采样 fake_B 到不同分辨率
+            fake_B_128 = F.interpolate(self.fake_B, size=(128, 128), mode="bilinear", align_corners=False)
+            fake_B_64 = F.interpolate(self.fake_B, size=(64, 64), mode="bilinear", align_corners=False)
+
+            # 组合成多尺度输出
+            self.fake_B = [fake_B_64, fake_B_128, self.fake_B]
+        elif isinstance(self.fake_B, list) and all(isinstance(item, torch.Tensor) for item in self.fake_B):
+            #print(f"Generator output is a list of tensors: {[item.shape for item in self.fake_B]}")
+        
+            # 假设 self.fake_B 已经是多尺度输出，直接使用
+            if len(self.fake_B) != 3:
+                raise ValueError("Expected self.fake_B to have exactly 3 elements (multi-scale outputs)")
+        
+            # 如果需要进一步处理，可以在这里进行
+            self.fake_B_ = self.fake_B[2]
+        else:
+            raise ValueError("Unexpected output format from generator")
+        
         self.fake_B_ = self.fake_B[2]
 
     def backward_D(self, iters):
@@ -154,6 +178,9 @@ class Blur2BlurModel(BaseModel):
         real_B0 = F.interpolate(self.real_B, scale_factor=0.25, mode="bilinear")
         real_B1 = F.interpolate(self.real_B, scale_factor=0.5, mode="bilinear")
         real_B = [real_B0, real_B1, self.real_B]
+        # 检查 real_B 和 fake_B 是否为列表并且长度至少为 3
+        if len(real_B) < 3 or len(fake_B) < 3:
+            raise ValueError("real_B or fake_B does not have enough elements for gradient penalty calculation")
         pred_real = self.netD(real_B)
 
         self.loss_D_real = self.criterionGAN(0, pred_real, True, dis_update=True)
