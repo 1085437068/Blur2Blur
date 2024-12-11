@@ -17,19 +17,20 @@ PSNR on 90 samples
 Mean: 22.898429277088134 std: 3.3813844409344105
 
 
-2.在使用blur2blur之后，test-90的PSNR计算如下（由blur2blur代码中没有预训练模型，因此采用划分的训练集进行训练后再看结果）：
-（1）使用blur2blur训练UIEB数据
-实验一：模型使用blur2blur，生成器使用mimountet
-python train.py --dataroot dataset --name blur2blur_mimounet --model blur2blur --netG mimounet --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+2.在使用blur2blur之后，test-90的PSNR计算如下（由blur2blur代码中没有预训练模型，因此采用划分的训练集进行训练后再看结果）,使用blur2blur训练UIEB数据:
+数据集划分：
 trainA:train-low355
 trainB:train-low355 gt
 trainC:train-high455
 trainD:train-high455 gt
 testA:test-90
 
+实验一：模型使用blur2blur，使用不同的生成器
+1.生成器使用mimountet
+运行train：python train.py --dataroot dataset --name blur2blur_mimounet --model blur2blur --netG mimounet --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
 运行test：python test.py --dataroot ./dataset/ --name blur2blur_mimounet --eval --model blur2blur --netG mimounet --checkpoints_dir ckpts/ --dataset_mode unaligned --norm instance
 
-（2）GT和原始图片blur后的图片
+（1）GT和原始图片blur后的图片
 SSIM on 90 samples
 Mean: 7.098177227142586 std: 1.2740775103013935
 PSNR on 90 samples
@@ -41,12 +42,39 @@ Mean: 8.349262919194697 std: 0.8479304129520258
 PSNR on 90 samples
 Mean: 21.18151319118627 std: 3.85820436744229
 
-实验二：模型使用blur2blur，生成器使用unet256
-python train.py --dataroot dataset --name blur2blur_unet_256 --model blur2blur --netG unet_256 --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+2.生成器使用unet256
+运行train：python train.py --dataroot dataset --name blur2blur_unet_256 --model blur2blur --netG unet_256 --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+运行test：python test.py --dataroot ./dataset/ --name blur2blur_unet_256 --eval --model blur2blur --netG unet_256 --checkpoints_dir ckpts/ --dataset_mode unaligned --norm instance
+
+(1)GT和原始图片blur后的图片
+SSIM on 90 samples
+Mean: 5.661306290383228 std: 1.0304867076131283
+PSNR on 90 samples
+Mean: 16.897870341744433 std: 1.7259780722000226
 
 
+（2）GT和原始图片blur后，再进行增强的图片
+SSIM on 90 samples
+Mean: 6.119797102076827 std: 0.7657514200277025
+PSNR on 90 samples
+Mean: 16.842388061275543 std: 1.678636029705792
 
+3.生成器使用resnet_9blocks
+运行train：python train.py --dataroot dataset --name blur2blur_resnet_9blocks --model blur2blur --netG resnet_9blocks --batch_size 1 --dataset_mode unaligned --norm instance --pool_size 0 --display_id -1
+运行test：python test.py --dataroot ./dataset/ --name blur2blur_resnet_9blocks --eval --model blur2blur --netG resnet_9blocks --checkpoints_dir ckpts/ --dataset_mode unaligned --norm instance
 
+(1)GT和原始图片blur后的图片
+SSIM on 90 samples
+Mean: 4.1551885342313355 std: 0.6832821623023356
+PSNR on 90 samples
+Mean: 16.61124062457714 std: 1.737867631862173
 
+(2)GT和原始图片blur后，再进行增强的图片
+SSIM on 90 samples
+Mean: 5.07403924290303 std: 0.6611859150176557
+PSNR on 90 samples
+Mean: 16.504167956757456 std: 1.7122428766598572
+
+实验一结论：使用mimounet最有效
 
 
